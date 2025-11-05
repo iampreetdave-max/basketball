@@ -9,6 +9,14 @@ from datetime import datetime, timedelta
 import time
 import os
 
+# Configuration
+API_KEY = "QX0NQvDcyoOD1ezA00fte73Mp8EMDKNxpOZmhxod"
+BASE_URL = "https://api.sportradar.com/oddscomparison-prematch/trial/v2"
+LOCALE = "en"
+SPORT_URN = "sr:sport:2"  # NBA
+
+HEADERS = {"Accept": "application/json"}
+
 # Team name to alias mapping
 TEAM_ALIASES = {
     "Atlanta Hawks": "ATL",
@@ -182,7 +190,7 @@ def main():
     print("STEP 1: Loading NBA.csv...")
     print()
     
-    nba_file = "/mnt/user-data/uploads/NBA__2_.csv"
+    nba_file ="NBA.csv"
     
     try:
         df_nba = pd.read_csv(nba_file)
@@ -298,7 +306,7 @@ def main():
     print()
     
     current_dir = os.getcwd()
-    output_file = os.path.join(current_dir, "NBA_with_DraftKings_odds.csv")
+    output_file = os.path.join(current_dir, "NBA_perfect.csv")
     
     df_combined.to_csv(output_file, index=False)
     print(f"✓ Saved: {output_file}")
