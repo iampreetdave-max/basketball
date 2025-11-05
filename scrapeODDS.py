@@ -182,7 +182,7 @@ def main():
     print("STEP 1: Loading NBA.csv...")
     print()
     
-    nba_file = "NBA.csv"
+    nba_file = "/mnt/user-data/uploads/NBA__2_.csv"
     
     try:
         df_nba = pd.read_csv(nba_file)
@@ -298,7 +298,7 @@ def main():
     print()
     
     current_dir = os.getcwd()
-    output_file = os.path.join(current_dir, "WIN.csv")
+    output_file = os.path.join(current_dir, "NBA_with_DraftKings_odds.csv")
     
     df_combined.to_csv(output_file, index=False)
     print(f"✓ Saved: {output_file}")
