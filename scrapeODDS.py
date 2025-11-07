@@ -17,6 +17,9 @@ SPORT_URN = "sr:sport:2"  # NBA
 
 HEADERS = {"Accept": "application/json"}
 
+# TEST MODE: Set to None to process all rows, or set to a number (e.g., 20) to limit rows
+TEST_LIMIT = 20
+
 # Team name to alias mapping
 TEAM_ALIASES = {
     "Atlanta Hawks": "ATL",
@@ -75,10 +78,10 @@ def get_sport_event_markets(date_str, debug=False):
                     for market in markets:
                         books = market.get("books", [])
                         for book in books:
-                            if book.get("name") == "DraftKings":
+                            if book.get("id") == "sr:book:18149":
                                 market_names.add(market.get("name", "Unknown"))
                     if market_names:
-                        print(f"    Available DraftKings markets: {market_names}")
+                        print(f"    Available DraftKings (sr:book:18149) markets: {market_names}")
             
             return data
         elif response.status_code == 404:
@@ -98,7 +101,7 @@ def get_sport_event_markets(date_str, debug=False):
 
 
 def extract_draftkings_odds(markets_data, date_str):
-    """Extract ONLY DraftKings decimal odds"""
+    """Extract ONLY DraftKings (sr:book:18149) decimal odds from sr:market:219 and sr:market:225"""
     odds_dict = {}
     
     if not markets_data or "sport_schedule_sport_event_markets" not in markets_data:
@@ -132,18 +135,22 @@ def extract_draftkings_odds(markets_data, date_str):
         # Parse all markets for DraftKings only
         markets = event_entry.get("markets", [])
         for market in markets:
-            market_name = market.get("name", "Unknown")
+            market_id = market.get("id", "")
             books = market.get("books", [])
             
+            # Only process sr:market:219 (winner incl. overtime) and sr:market:225 (total incl. overtime)
+            if market_id not in ["sr:market:219", "sr:market:225"]:
+                continue
+            
             for book in books:
-                # ONLY process DraftKings
-                if book.get("name") != "DraftKings":
+                # ONLY process sr:book:18149 (DraftKings)
+                if book.get("id") != "sr:book:18149":
                     continue
                 
                 outcomes = book.get("outcomes", [])
                 
-                # Process moneyline (home/away winning)
-                if "1x2" in market_name or "Moneyline" in market_name or "winner" in market_name.lower():
+                # Process sr:market:219 (winner incl. overtime)
+                if market_id == "sr:market:219":
                     for outcome in outcomes:
                         outcome_type = outcome.get("type", "").lower()
                         odds_decimal = outcome.get("odds_decimal")
@@ -153,9 +160,8 @@ def extract_draftkings_odds(markets_data, date_str):
                         elif odds_decimal and "away" in outcome_type:
                             game_odds['away_winning_odds_decimal'] = odds_decimal
                 
-                # Process total (over/under)
-                # Try multiple matching patterns
-                if any(x in market_name.lower() for x in ["total", "over/under", "under/over", "ou ", "o/u"]):
+                # Process sr:market:225 (total incl. overtime)
+                if market_id == "sr:market:225":
                     for outcome in outcomes:
                         outcome_type = outcome.get("type", "").lower()
                         odds_decimal = outcome.get("odds_decimal")
@@ -190,12 +196,17 @@ def main():
     print("STEP 1: Loading NBA.csv...")
     print()
     
-    nba_file ="NBA.csv"
+    nba_file ="ball_data.csv"
     
     try:
         df_nba = pd.read_csv(nba_file)
         print(f"✓ Loaded {len(df_nba)} games")
         print(f"  Columns: {len(df_nba.columns)}")
+        
+        # Apply test limit if set
+        if TEST_LIMIT is not None:
+            df_nba = df_nba.head(TEST_LIMIT)
+            print(f"  TEST MODE: Limited to {len(df_nba)} games")
     except Exception as e:
         print(f"✗ Error: {e}")
         return
@@ -211,7 +222,7 @@ def main():
         return
     
     # Extract unique dates
-    df_nba['date'] = pd.to_datetime(df_nba['scheduled']).dt.strftime('%Y-%m-%d')
+    df_nba['date'] = pd.to_datetime(df_nba['scheduled'], format='ISO8601').dt.strftime('%Y-%m-%d')
     unique_dates = sorted(df_nba['date'].unique())
     
     print(f"✓ Unique dates: {len(unique_dates)}")
@@ -276,7 +287,7 @@ def main():
     if df_odds['over_odds_decimal'].notna().sum() == 0:
         print(f"\n  ⚠️  No over/under odds found - checking why...")
         print(f"  API may not have over/under for these dates")
-        print(f"  Or market name format is different")
+        print(f"  Or market ID is different")
         # Show sample odds that were fetched
         if len(df_odds) > 0:
             print(f"\n  Sample fetched odds row:")
@@ -356,10 +367,10 @@ def main():
     print(f"Coverage: {(matched/len(df_nba)*100):.1f}%")
     
     print(f"\nNew columns added:")
-    print(f"  • home_winning_odds_decimal (DraftKings)")
-    print(f"  • away_winning_odds_decimal (DraftKings)")
-    print(f"  • over_odds_decimal (DraftKings)")
-    print(f"  • under_odds_decimal (DraftKings)")
+    print(f"  • home_winning_odds_decimal (DraftKings sr:book:18149, sr:market:219)")
+    print(f"  • away_winning_odds_decimal (DraftKings sr:book:18149, sr:market:219)")
+    print(f"  • over_odds_decimal (DraftKings sr:book:18149, sr:market:225)")
+    print(f"  • under_odds_decimal (DraftKings sr:book:18149, sr:market:225)")
     
     if matched > 0:
         print(f"\nOdds statistics (from {matched} games):")
