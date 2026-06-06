@@ -16,12 +16,13 @@ import requests
 import pandas as pd
 import numpy as np
 import time
+import os
 from datetime import datetime, timedelta
 from typing import List, Dict, Optional, Tuple
 from collections import defaultdict
 
 # API Configuration
-API_KEY = "ihQYMqeJjtkej2xx6LzFYy8ZqLzw0z2irwMR7NaC"
+API_KEY = os.environ.get("SPORTRADAR_NBA_API_KEY", "")
 BASE_URL = "https://api.sportradar.us/nba"
 ACCESS_LEVEL = "trial"
 VERSION = "v8"
