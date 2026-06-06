@@ -10,7 +10,7 @@ import time
 import os
 
 # Configuration
-API_KEY = "QX0NQvDcyoOD1ezA00fte73Mp8EMDKNxpOZmhxod"
+API_KEY = os.environ.get("SPORTRADAR_ODDS_API_KEY", "")
 BASE_URL = "https://api.sportradar.com/oddscomparison-prematch/trial/v2"
 LOCALE = "en"
 SPORT_URN = "sr:sport:2"  # NBA
