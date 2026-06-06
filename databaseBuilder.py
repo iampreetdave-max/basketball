@@ -17,7 +17,7 @@ from collections import defaultdict
 # API CONFIGURATION
 # ============================================================================
 
-NBA_API_KEY = "QX0NQvDcyoOD1ezA00fte73Mp8EMDKNxpOZmhxod"
+NBA_API_KEY = os.environ.get("SPORTRADAR_NBA_API_KEY", "")
 NBA_BASE_URL = "https://api.sportradar.us/nba/trial/v8/en"
 
 NBA_REQUEST_DELAY = 1.1
