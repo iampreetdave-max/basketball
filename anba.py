@@ -10,6 +10,7 @@ import requests
 import pandas as pd
 import numpy as np
 import time
+import os
 from datetime import datetime, timedelta
 from typing import List, Dict, Optional, Tuple
 from collections import defaultdict
@@ -18,10 +19,10 @@ from collections import defaultdict
 # API CONFIGURATION
 # ============================================================================
 
-NBA_API_KEY = "ihQYMqeJjtkej2xx6LzFYy8ZqLzw0z2irwMR7NaC"
+NBA_API_KEY = os.environ.get("SPORTRADAR_NBA_API_KEY", "")
 NBA_BASE_URL = "https://api.sportradar.us/nba/trial/v8/en"
 
-ODDS_API_KEY = "ihQYMqeJjtkej2xx6LzFYy8ZqLzw0z2irwMR7NaC"
+ODDS_API_KEY = os.environ.get("SPORTRADAR_ODDS_API_KEY", "")
 ODDS_BASE_URL = "https://api.sportradar.com/oddscomparison-usp1"
 
 NBA_REQUEST_DELAY = 1.1
@@ -715,7 +716,7 @@ def main():
     """Main execution function"""
     
     # Check if odds API key is set
-    if ODDS_API_KEY == "YOUR_ODDS_API_KEY_HERE":
+    if ODDS_API_KEY == "YOUR_ODDS_API_KEY_HERE" or not ODDS_API_KEY:
         print("\n" + "="*70)
         print("⚠️  WARNING: Odds API key not configured!")
         print("="*70)
